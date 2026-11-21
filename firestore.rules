@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid}/tasks/{taskId} {
+
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.id == taskId
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.is_deleted is bool
+        && request.resource.data.updated_at is string
+        && request.resource.data.server_updated_at == request.time;
+
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
